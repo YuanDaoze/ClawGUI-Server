@@ -177,6 +177,18 @@ def configure_parser(subparsers: argparse._SubParsersAction) -> None:
         help="Mount local src directory to container",
     )
     launch_parser.add_argument(
+        "--mount-src-path",
+        "--mount_src_path",
+        dest="mount_src_path",
+        type=str,
+        default=None,
+        help=(
+            "Explicit host src directory to mount to /app/service/src. "
+            "Must point to the 'src' folder itself, e.g. /path/to/MobileWorld/src. "
+            "Overrides --mount-src auto-detection when both are given."
+        ),
+    )
+    launch_parser.add_argument(
         "--launch-interval",
         "--launch_interval",
         dest="launch_interval",
@@ -389,6 +401,30 @@ def _launch_containers(args: argparse.Namespace) -> None:
                     border_style="yellow",
                 )
             )
+
+    # Handle explicit --mount-src-path: overrides auto-detected dev_src_path above
+    if args.mount_src_path:
+        explicit_path = Path(args.mount_src_path).expanduser()
+        if not explicit_path.is_absolute():
+            explicit_path = current_path / explicit_path
+        explicit_path = explicit_path.resolve()
+        if not explicit_path.is_dir():
+            console.print(
+                Panel(
+                    f"[red]--mount-src-path is not an existing directory: {explicit_path}[/red]",
+                    title="[red]✗ Error[/red]",
+                    border_style="red",
+                )
+            )
+            sys.exit(1)
+        dev_src_path = explicit_path
+        console.print(
+            Panel(
+                f"[green]Source mount enabled[/green]\n[cyan]Mounting:[/cyan] {dev_src_path} → /app/service/src",
+                title="[green]📦 Source Mount[/green]",
+                border_style="green",
+            )
+        )
 
     # Handle .env file mounting
     env_file_path = None

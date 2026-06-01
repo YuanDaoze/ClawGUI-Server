@@ -22,6 +22,16 @@ This will:
 
 **Note:** Dev mode only supports launching a single container. If you need multiple containers, launch them separately without dev mode.
 
+### Mounting an Explicit Source Path
+
+When you want to mount a `src` directory that is **not** under the current working directory's project root — for example, the upstream [MobileWorld](https://github.com/Tongyi-MAI/MobileWorld) source while you're inside ClawGUI-Server — pass the path explicitly:
+
+```bash
+mw env run --mount-src-path /path/to/MobileWorld/src
+```
+
+The path must point to the `src` folder itself (not the repo root). It overrides `--mount-src` auto-detection when both are given. Errors are hard failures (the command exits) rather than silent warnings, so a typo won't quietly fall back to the default mount.
+
 ### Restarting the Server
 
 When you make code changes in dev mode, you need to restart the server for changes to take effect:

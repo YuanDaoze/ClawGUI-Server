@@ -103,6 +103,28 @@ sudo uv run mw env list
 sudo uv run mw env rm --all
 ```
 
+### 5. Use Upstream MobileWorld Source (Optional)
+
+ClawGUI-Server currently vendors a copy of [MobileWorld](https://github.com/Tongyi-MAI/MobileWorld). If a bug is already fixed upstream but no new Docker image tag has been published, you can mount the upstream `src` directly into the container with `--mount-src-path`, **without changing your working directory**:
+
+```bash
+# Step 1: clone MobileWorld anywhere (sibling to ClawGUI-Server is convenient)
+git clone https://github.com/Tongyi-MAI/MobileWorld.git /path/to/MobileWorld
+
+# Step 2: launch from ClawGUI-Server with --mount-src-path
+uv run mw env run \
+    --count 1 \
+    --mount-src-path /path/to/MobileWorld/src \
+    --backend-start-port 7000 \
+    --viewer-start-port 8000 \
+    --vnc-start-port 5900 \
+    --adb-start-port 5600
+```
+
+`/app/service/src` inside the container is overlaid with the MobileWorld `src/` you specified — restart the in-container server to pick up changes.
+
+> Difference from `--mount-src`: `--mount-src` walks up from `cwd` to find `pyproject.toml` and mounts this repo's own `src/`; `--mount-src-path` takes an explicit host path — useful for mounting upstream code, another worktree, or any non-default location. Neither implies `--dev` (no auto VNC, no single-container restriction).
+
 ## Model Deployment
 
 Deploy model services using vLLM. Example scripts are in the `scripts/` directory:

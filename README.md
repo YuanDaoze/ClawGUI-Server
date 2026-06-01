@@ -103,6 +103,28 @@ sudo uv run mw env list
 sudo uv run mw env rm --all
 ```
 
+### 5. 使用上游 MobileWorld 源码（可选）
+
+ClawGUI-Server 当前 vendored 了一份 [MobileWorld](https://github.com/Tongyi-MAI/MobileWorld) 源码。如果上游已修复了某个 bug 但 Docker 镜像还未发布新 tag，可以通过 `--mount-src-path` 把上游 `src` 直接挂进容器，**无需切换工作目录**：
+
+```bash
+# 第一步：克隆 MobileWorld（与 ClawGUI-Server 平级即可，路径任意）
+git clone https://github.com/Tongyi-MAI/MobileWorld.git /path/to/MobileWorld
+
+# 第二步：在 ClawGUI-Server 目录下用 --mount-src-path 启动容器
+uv run mw env run \
+    --count 1 \
+    --mount-src-path /path/to/MobileWorld/src \
+    --backend-start-port 7000 \
+    --viewer-start-port 8000 \
+    --vnc-start-port 5900 \
+    --adb-start-port 5600
+```
+
+容器内的 `/app/service/src` 会被替换为你指定的 MobileWorld `src/`，重启容器内 server 即可生效。
+
+> 与 `--mount-src` 的区别：`--mount-src` 通过当前 cwd 向上查找 `pyproject.toml` 自动挂载本仓库的 `src/`；`--mount-src-path` 显式指定路径，适合"挂上游 / 挂另一个 worktree"等场景。两者都不会启用 `--dev` 隐含的 VNC 与单容器限制。
+
 ## 模型部署
 
 使用 vLLM 部署模型服务，示例脚本在 `scripts/` 目录下：
